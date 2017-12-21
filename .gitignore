@@ -1,0 +1,6 @@
+*.S.cof
+*.S.hex
+*.S.eep.hex
+*.S.hex
+*.S.lst
+*.S.obj
