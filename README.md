@@ -1,0 +1,23 @@
+# Binary clock with attiny88 in assembler
+
+While in school I implemented a binary clock with a pic16f874 and after playing a while with arduinos I wanted to replicate it with arduino.
+
+# Getting started
+
+Finding information about avr assembler is not that easy so I decided to write down my journey of this project. The decision to start doing this came yesterday night 20.12.2017 and this might take a while :)
+
+After quite a lot of googling I settled on Avra and avrdude combination
+
+* http://avra.sourceforge.net/
+* http://www.nongnu.org/avrdude/
+
+to my surprise '''dnf install avra avrdude''' on fedora worked nicely.
+
+For editor I've been using vscode for a while, so somekind of asm higlight would be nice. Didn't find anything good yet. Simulator would also be nice but it seems there arent that many options outside Atmel Studio.
+
+# more to read
+
+* Attiny88 datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/doc8008.pdf
+* AVR Assembler http://ww1.microchip.com/downloads/en/DeviceDoc/40001917A.pdf
+* AVR Instruction Set Manual http://ww1.microchip.com/downloads/en/devicedoc/atmel-0856-avr-instruction-set-manual.pdf
+* Beginners Introduction to the Assembly Language of ATMEL AVR Microprocessors www.avr-asm-download.de/beginner_en.pdf
