@@ -5,12 +5,16 @@
 	;; **************************************************
 
 	.nolist
-	.include "tn85def.inc"
+	.include "tn84def.inc"
 	.list
 
 	;; ====================
 	;; Declarations
 	;;
+
+	.def sec = r17 		; keep the value of seconds
+	.def min = r18		; value of minutes
+	.def hour = r19		; value of hours
 
 	;;
 	;; ====================
@@ -22,12 +26,18 @@
 	rjmp MAIN ; Reset vector
 	reti ; Int vector 1
 
+
+	.org 0x0020
+	rjmp tmr1overflow
+
+
 	;; ====================
 
 	;; ====================
 	;; Main init
 MAIN:
 
+	ldi r16, 0x00000001
 	;; ====================
 
 
@@ -40,3 +50,7 @@ LOOP:
 	rjmp LOOP
 
 	;; ====================
+
+tmr1overflow:
+	nop
+	ret

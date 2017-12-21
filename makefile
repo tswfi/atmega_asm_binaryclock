@@ -12,7 +12,7 @@
 # SRCFILE -> single assembler file that contains the source
 #
 
-MCU = t85
+MCU = t84
 TARGET = usbasp
 DEVICE = /dev/tty.usbserial
 INCPATH = /usr/share/avra/
