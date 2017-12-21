@@ -20,6 +20,7 @@ Found the include file for attiny88 from this repo: https://github.com/DarkSecto
 # Day1
 
 Started this repo, found out that attiny88 is not supported by avra, switched to attiny85 (might need to add a shift register into the mix...)
+
 Added makefile and asm file that does nothing and got it "working"
 
 # more to read
