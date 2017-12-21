@@ -1,4 +1,4 @@
-# Binary clock with attiny88 in assembler
+# Binary clock with attiny in assembler
 
 While in school I implemented a binary clock with a pic16f874 and after playing a while with arduinos I wanted to replicate it with arduino.
 

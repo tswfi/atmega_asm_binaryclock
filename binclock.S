@@ -36,6 +36,7 @@ MAIN:
 
 LOOP:
 	nop
+	nop
 	rjmp LOOP
 
 	;; ====================
