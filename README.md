@@ -17,6 +17,11 @@ For editor I've been using vscode for a while, so somekind of asm higlight would
 
 Found the include file for attiny88 from this repo: https://github.com/DarkSector/AVR/blob/bb279327a4b5240401fee3b5f772716d9a2d2e4f/asm/include/tn88def.inc Thanks https://github.com/DarkSector
 
+# Day1
+
+Started this repo, found out that attiny88 is not supported by avra, switched to attiny85 (might need to add a shift register into the mix...)
+Added makefile and asm file that does nothing and got it "working"
+
 # more to read
 
 * Attiny88 datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/doc8008.pdf
