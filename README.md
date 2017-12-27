@@ -23,6 +23,10 @@ Started this repo, found out that attiny88 is not supported by avra, switched to
 
 Added makefile and asm file that does nothing and got it "working"
 
+# Day2 (and 3)
+
+After fumbling around I decided to try atmel studio and switch to atmega328p (as I had those laying around). And after reading the datasheet too many times and trying various things I finally have a working prototype.
+
 # more to read
 
 * Attiny88 datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/doc8008.pdf
