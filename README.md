@@ -29,7 +29,7 @@ After fumbling around I decided to try atmel studio and switch to atmega328p (as
 
 # Day4 (and 5)
 
-Debouncing with trigger is a pita. switched to another debouncing scheme.
+Debouncing a button with interrupts is a pita. switched to another debouncing scheme.
 
 Also noticed that I didn't save the sreg in the isr which caused random things to happen :)
 
