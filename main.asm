@@ -26,11 +26,12 @@
 .def mscnt        = r21        ; millisecond loop counter, tmp1_cmp_isr will increment this every 10ms and clear every second
 .def col          = r22        ; used when outputting values
 .def zero         = r23        ; quick zero
+.def button       = r24        ; btn status. this will increment every 10ms if pressed
 
 .org 0x0000
     rjmp reset                 ; reset vector
-.org INT0addr
-    rjmp int0_isr              ; handle int0 
+;.org INT0addr
+;    rjmp int0_isr              ; handle int0 
 .org OC1Aaddr 
     rjmp tmr1_cmp_isr          ; timer1 compare handler
 
@@ -46,43 +47,73 @@ reset:
 	ldi temp,(1 << PD2)         ; to enable the pull up set the pin up
 	out PORTD, temp            
 
+	; start from 00:00:00
+	clr seconds
+	clr minutes
+	clr hours
+
     ; set up our timer
     ldi temp,(1 << WGM12)|(1<<CS12)    ; CTC mode and /256 prescaler
     sts TCCR1B,temp
 
-    ldi temp, 0x18             ; upper 
-    ldi temp2, 0x69            ; lower
+    ldi temp, 0x02             ; upper 
+    ldi temp2, 0x70            ; lower
     sts OCR1AH,temp            ; and set it
     sts OCR1AL,temp2           ; and set it
 
     ldi temp,(1 << OCIE1A)     ; enable timer1 compare interrupts
     sts TIMSK1, temp    
 
-	; set up our button interrupt
-	ldi temp, (1 << ISC01)     ; trigger on falling edge
-	sts EICRA, temp
-	ldi temp, (1 << INT0)      ; enable int0 interrupts
-	out EIMSK, temp
-
     sei                        ; enable global interrupts
 
 loop:
-    ; just output our data into our matrix all the time
-    rcall output
+    ; main loop
+	rcall checkbutton
+	rcall tock                 ; advance minutes and hours etc as necessary
+    rcall output               ; output the data to the leds
     rjmp loop
 
-int0_isr:                      ; handle int0
-	ldi seconds, 59            ; set seconds to 60 and call increment to get minutes incremented
-	rcall tick                 ; call tick, it will advance minutes and clear seconds to 0
-reti
+checkbutton:
+    ; short press
+	cpi button, 0x08           ; if button is 0x08 (80ms)
+	brne PC+4
+	inc minutes                ; increment minutes
+	clr seconds                ; clear seconds
+	inc button                 ; increment button by one so that we wont hit it again
+
+	; long press
+	cpi button, 0x64           ; if button is over a second down
+	brlt PC+5                  ; 
+	ldi temp, 0x05 
+	add minutes, temp          ;
+    clr seconds                
+	subi button, 0x05          ; subtract five from button to get it to repeat after 50ms
+
+ret
 
 tmr1_cmp_isr:                  ; called every 100ms
     push temp                  ; save our temp
+	push temp2
+	in temp, SREG              ; save sreg
+	push temp
+
+	; increment our ms counter
     inc mscnt                  ;  
-    cpi mscnt,0x0A             ; check if we are on the tenth time  (1 sec)
-    brlt PC+3                  ; if not go back
-    rcall tick                 ; call tick
-    clr mscnt                  ; clear the counter for the next time
+    cpi mscnt,0x64             ; check if we are on the 100th time  (1 sec)
+    brlt PC+3                  ; if not don't advance seconds
+	clr mscnt                  ; clear the counter for the next time
+    inc seconds                ; plus one second
+
+	; handle the button
+	sbic pind,2                ; if the button is not pressed:
+	clr button                 ; clear it
+	cpi button, 0xff           ; do not allow it to roll over
+	breq PC+2
+	inc button                 ; every time increment the button counter
+
+	pop temp                   ; restore sreg
+	out sreg, temp	   
+	pop temp2
     pop temp                   ; restore temp
 reti
 
@@ -105,17 +136,19 @@ tick:
     ; for every call here increment the seconds and check if we need to increment
     ; minutes or hours also. This should be called once every second
     inc seconds                ; always increment seconds
+tock:
+    ; advance minutes and hours as necessary
     cpi seconds,0x3c           ; check if seconds is 60
-    brne PC+3                  ; if it was not jump forward
+    brlt PC+3                  ; if it was not jump forward
     clr seconds                ; clear seconds
     inc minutes                ; increment minutes
     cpi minutes,0x3c           ; check if minutes is 60
-    brne PC+4                  ; if it was not jump over
+    brlt PC+4                  ; if it was not jump over
     clr seconds                ; clear seconds
     clr minutes                ; clear minutes
     inc hours                  ; increment hours
     cpi hours,24               ; check if hours is 24
-    brne PC+4                  ; if not jump over
+    brlt PC+4                  ; if not jump over
     clr seconds                ; back to zero you go
     clr minutes
     clr hours
