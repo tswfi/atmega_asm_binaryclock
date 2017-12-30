@@ -27,6 +27,14 @@ Added makefile and asm file that does nothing and got it "working"
 
 After fumbling around I decided to try atmel studio and switch to atmega328p (as I had those laying around). And after reading the datasheet too many times and trying various things I finally have a working prototype.
 
+# Day4 (and 5)
+
+Debouncing with trigger is a pita. switched to another debouncing scheme.
+
+Also noticed that I didn't save the sreg in the isr which caused random things to happen :)
+
+But now its more or less ready :)
+
 # more to read
 
 * Attiny88 datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/doc8008.pdf
