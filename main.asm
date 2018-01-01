@@ -48,9 +48,9 @@ reset:
 	out PORTD, temp            
 
 	; start from 00:00:00
-	clr seconds
-	clr minutes
-	clr hours
+;	clr seconds
+;	clr minutes
+;	clr hours
 
     ; set up our timer
     ldi temp,(1 << WGM12)|(1<<CS12)    ; CTC mode and /256 prescaler
@@ -93,7 +93,6 @@ ret
 
 tmr1_cmp_isr:                  ; called every 100ms
     push temp                  ; save our temp
-	push temp2
 	in temp, SREG              ; save sreg
 	push temp
 
@@ -113,8 +112,7 @@ tmr1_cmp_isr:                  ; called every 100ms
 
 	pop temp                   ; restore sreg
 	out sreg, temp	   
-	pop temp2
-    pop temp                   ; restore temp
+   pop temp                   ; restore temp
 reti
 
 bin2digits:
@@ -205,6 +203,8 @@ output:
 ret
 
 delay:
+    ldi zero, 0x01
+delay_loop:
     dec zero                    ; reuse our zero for the delay :)
-	brne delay
+	brne delay_loop
 ret
