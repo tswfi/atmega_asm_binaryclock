@@ -1,6 +1,6 @@
 # Binary clock with attiny in assembler
 
-While in school I implemented a binary clock with a pic16f874 and after playing a while with arduinos I wanted to replicate it with arduino.
+While in school I implemented a binary clock with a pic16f874 assembler and after playing a while with arduinos I wanted to replicate it with arduino.
 
 # Getting started
 
@@ -35,8 +35,27 @@ Also noticed that I didn't save the sreg in the isr which caused random things t
 
 But now its more or less ready :)
 
+# Day something
+
+Cleaned up the code and commented it a bit more.
+
+Also fixed avra builds and the makefile.
+
+The clock has been running on my bench for few days and it seems to keep time quite well.
+
+# Final thoughs
+
+After all of this what did I learn?
+
+* Select a tool that is well supported (and a chip you already have in stock :)
+* Thinking in bits takes a while to get used to again (its been a while)
+* Simulator is really nice when learning
+
+The code is still kind of a mess and I bet it needs more documentation (wont probably understand it after few months)
+
 # more to read
 
+* A MORON'S GUIDE TO STARTING IN AVR ASSEMBLER v1.3 https://sites.google.com/site/avrasmintro/home
 * Attiny88 datasheet: http://ww1.microchip.com/downloads/en/DeviceDoc/doc8008.pdf
 * AVR Assembler http://ww1.microchip.com/downloads/en/DeviceDoc/40001917A.pdf
 * AVR Instruction Set Manual http://ww1.microchip.com/downloads/en/devicedoc/atmel-0856-avr-instruction-set-manual.pdf
