@@ -2,6 +2,8 @@
 
 While in school I implemented a binary clock with a pic16f874 assembler and after playing a while with arduinos I wanted to replicate it with arduino.
 
+![Prototype](proto.jpg "First prototype")
+
 # Getting started
 
 Finding information about avr assembler is not that easy so I decided to write down my journey of this project. The decision to start doing this came yesterday night 20.12.2017 and this might take a while :)
@@ -60,3 +62,8 @@ The code is still kind of a mess and I bet it needs more documentation (wont pro
 * AVR Assembler http://ww1.microchip.com/downloads/en/DeviceDoc/40001917A.pdf
 * AVR Instruction Set Manual http://ww1.microchip.com/downloads/en/devicedoc/atmel-0856-avr-instruction-set-manual.pdf
 * Beginners Introduction to the Assembly Language of ATMEL AVR Microprocessors www.avr-asm-download.de/beginner_en.pdf
+
+# Images
+
+![Back](back.jpg "Back with manhattan style matrix wiring")
+![Front](front.jpg "Front, leds, chip and the button and crystal")
