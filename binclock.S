@@ -109,7 +109,7 @@ tmr1_cmp_isr_not_sec:
     ; handle the button
     ; on every isr increment the button counter. if the button is not pressed
     ; clear the counter.
-    sbic pind,(1<<PD2)         ; if the button is not pressed:
+    sbic pind,pd2              ; if the button is not pressed:
     clr button                 ; clear it
 
     cpi button, 0xff           ; do not allow button counter to roll over
