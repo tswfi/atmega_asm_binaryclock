@@ -8,7 +8,7 @@
 
 ; pin assignments:
 ; external increment input PD2 (interrupt driven) high to trigger
-; PC0,1,2,3,4,5 for the column (0 is the leftmost column) led cathodes
+; PC0,1,2,3,4,5 for the columns (0 is the leftmost column) led cathodes
 ; PD4,5,6,7 for the row led anodes
 ; and pb3, pb4, pb5 and pc6 is reset, miso, mosi, sck (programming)
 ; pb6 pb7 crystal (16mhz)
@@ -37,20 +37,16 @@
 
 reset:
     ; set PC0-5 as outputs (columns)
-    ldi temp,0b00111111
+    ldi temp,(1 << PC0)|(1 << PC1)|(1 << PC2)|(1 << PC3)|(1 << PC4)|(1 << PC5)
     out DDRC,temp
 
-    ; set PD5-7 as outputs (rows)
+    ; set PD4-7 as outputs (rows)
     ; and PD2 as input with pull up
-    ldi temp,0b11110000         ; pd2=0 p5-7=1
+    ldi temp,(1 << PD4)|(1 << PD5)|(1 << PD6)|(1 << PD7)
     out DDRD,temp
-    ldi temp,(1 << PD2)         ; to enable the pull up set the pin up
+    ; enable pull up on PD2
+    ldi temp,(1 << PD2)
     out PORTD, temp
-
-    ; start from 00:00:00
-;    clr seconds
-;    clr minutes
-;    clr hours
 
     ; set up our timer
     ldi temp,(1 << WGM12)|(1<<CS12)    ; CTC mode and /256 prescaler
@@ -68,50 +64,62 @@ reset:
 
 loop:
     ; main loop
-    rcall checkbutton
+    rcall checkbutton          ; check for button
     rcall tock                 ; advance minutes and hours etc as necessary
     rcall output               ; output the data to the leds
-    rjmp loop
+    rjmp loop                  ; rinse repeat
 
 checkbutton:
+    ; handle button presses. tmr1_cmp_isr will increment button every 10ms if it
+    ; is pressed and zero it out if not.
+    ; this will give us a nice debounce for short presses and also allows us to
+    ; check when the button is pressed down longer
+
     ; short press
-    cpi button, 0x08           ; if button is 0x08 (80ms)
-    brne PC+4
+    cpi button, 0x08           ; if button is 0x08 (held down for at least 80ms)
+    brne checkbutton_ret1
     inc minutes                ; increment minutes
     clr seconds                ; clear seconds
     inc button                 ; increment button by one so that we wont hit it again
+checkbutton_ret1:
 
     ; long press
     cpi button, 0x64           ; if button is over a second down
-    brlt PC+5                  ;
-    ldi temp, 0x05
-    add minutes, temp          ;
-    clr seconds
-    subi button, 0x05          ; subtract five from button to get it to repeat after 50ms
+    brlt checkbutton_ret2
+    ldi temp, 0x05             ; increment minutes by 5
+    add minutes, temp
+    clr seconds                ; and clear seconds
+    subi button, 0x05          ; and subtract five from button to get it to repeat after 50ms
+checkbutton_ret2:
 ret
 
-tmr1_cmp_isr:                  ; called every 100ms
+tmr1_cmp_isr:                  ; called every 10ms
     push temp                  ; save our temp
     in temp, SREG              ; save sreg
     push temp
 
-    ; increment our ms counter
+    ; increment our ms counter on every call
     inc mscnt                  ;
     cpi mscnt,0x64             ; check if we are on the 100th time  (1 sec)
-    brlt PC+3                  ; if not don't advance seconds
+    brlt tmr1_cmp_isr_not_sec  ; if not don't advance seconds
     clr mscnt                  ; clear the counter for the next time
     inc seconds                ; plus one second
+tmr1_cmp_isr_not_sec:
 
     ; handle the button
-    sbic pind,2                ; if the button is not pressed:
+    ; on every isr increment the button counter. if the button is not pressed
+    ; clear the counter.
+    sbic pind,(1<<PD2)         ; if the button is not pressed:
     clr button                 ; clear it
-    cpi button, 0xff           ; do not allow it to roll over
-    breq PC+2
-    inc button                 ; every time increment the button counter
 
-   pop temp                   ; restore sreg
-   out sreg, temp
-   pop temp                   ; restore temp
+    cpi button, 0xff           ; do not allow button counter to roll over
+    breq tmr1_cmp_usr_not_over
+    inc button                 ; every time increment the button counter
+tmr1_cmp_usr_not_over:
+
+    pop temp                   ; restore sreg
+    out sreg, temp
+    pop temp                   ; restore temp
 reti
 
 bin2digits:
@@ -121,11 +129,12 @@ bin2digits:
     ; ouput tens in temp2 and ones in temp
     clr temp2                  ; clear temp2
 bin2digits_loop:
-    cpi temp,10                ; check if we are over 10
-    brlt PC+4                  ; if we are just return
-    inc temp2                  ; increment temp2
-    subi temp,10               ; decrement temp by 10
-    rjmp bin2digits_loop       ; go again untill we are under 10
+    cpi temp,10                ; check if temp is over 10
+    brlt bin2digits_done       ; if we are just return
+    inc temp2                  ; increment temp2 (tens)
+    subi temp,10               ; decrement temp by 10 (ones)
+    rjmp bin2digits_loop       ; go again untill temp is under 10
+bin2digits_done:
 ret
 
 
@@ -136,19 +145,22 @@ tick:
 tock:
     ; advance minutes and hours as necessary, this can be called all the time
     cpi seconds,0x3c           ; check if seconds is 60
-    brlt PC+3                  ; if it was not jump forward
+    brlt tock_check_min              ; if not check minutes
     clr seconds                ; clear seconds
     inc minutes                ; increment minutes
+tock_check_min:
     cpi minutes,0x3c           ; check if minutes is 60
-    brlt PC+4                  ; if it was not jump over
+    brlt tock_check_hours      ; if not check hours
     clr seconds                ; clear seconds
     clr minutes                ; clear minutes
     inc hours                  ; increment hours
+tock_check_hours:
     cpi hours,24               ; check if hours is 24
-    brlt PC+4                  ; if not jump over
+    brlt tock_ret              ; if not just return
     clr seconds                ; back to zero you go
     clr minutes
     clr hours
+tock_ret:
 ret
 
 outrow:
@@ -171,7 +183,7 @@ outnumber:
     out portc, col             ; set our column
     rcall bin2digits           ; separate the number to temp and temp2
     rcall outrow               ; display temp on the row in question
-    rcall delay                ; keep it for a while
+    rcall delay                ; keep it on for short a while
     out portd, zero            ; and off
 
     lsl col                    ; shift our column pattern
@@ -194,16 +206,16 @@ output:
     mov temp, seconds          ; get our full seconds
     rcall outnumber            ; and out them
 
-    mov temp, minutes          ; get our full seconds
+    mov temp, minutes          ; get our full minutes
     rcall outnumber
 
-    mov temp, hours
+    mov temp, hours            ; and hours
     rcall outnumber
 ret
 
 delay:
-    ldi zero, 0x01
+    ldi zero, 0x01             ; reuse our zero for the delay :)
 delay_loop:
-    dec zero                    ; reuse our zero for the delay :)
+    dec zero
     brne delay_loop
 ret
