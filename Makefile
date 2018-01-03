@@ -12,20 +12,19 @@
 # SRCFILE -> single assembler file that contains the source
 #
 
-MCU = t84
-TARGET = usbasp
-DEVICE = /dev/tty.usbserial
+MCU = atmega328p
+TARGET = usbtiny
 INCPATH = /usr/share/avra/
 SRCFILE = binclock.S
 
 $(SRCFILE).hex: $(SRCFILE)
 	avra -l $(SRCFILE).lst -I $(INCPATH) $(SRCFILE)
 
-flash:
-	avrdude -c $(TARGET) -p $(MCU) -P $(DEVICE) -U flash:w:$(SRCFILE).hex:i
+flash: $(SRCFILE).hex
+	avrdude -c $(TARGET) -p $(MCU) -U flash:w:$(SRCFILE).hex:i
 
 showfuses:
-	avrdude -c $(TARGET) -p $(MCU) -P $(DEVICE) -v 2>&1 |  grep "fuse reads" | tail -n2
+	avrdude -c $(TARGET) -p $(MCU) -v 2>&1 |  grep "fuse reads" | tail -n2
 
 clean:
 	rm -f $(SRCFILE).hex $(SRCFILE).eep.hex $(SRCFILE).lst $(SRCFILE).obj $(SRCFILE).cof
